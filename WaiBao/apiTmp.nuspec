@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>KinghtNing.JustApi</id>
+    <version>1.0.2</version>
+    <description> 清爽开发快速包,以普通企业官网后台api为原型</description>
+    <authors>testG6</authors>
+    <packageTypes>
+      <packageType name="WaiBao" />
+    </packageTypes>
+    <license type="file">LICENSE.txt</license>
+  </metadata>
+  <files>
+    <file src=".\**" target="WaiBao" exclude="**\bin\**;**\obj\**\;.\appsettings.Development.json;.\nfile" />
+    <file src="LICENSE.txt" target="" />
+    <file src="README.md" target="" />
+    <file src=".template.config\**" target="" />
+  </files>
+</package>
