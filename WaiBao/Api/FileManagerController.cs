@@ -20,6 +20,9 @@ namespace WaiBao.Api
     [ApiController]
     public class FileManagerController : BaseApi
     {
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public FileManagerController()
         {
         }
@@ -107,7 +110,7 @@ namespace WaiBao.Api
         }
 
         /// <summary>
-        /// 上传视频
+        /// 上传图片
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
