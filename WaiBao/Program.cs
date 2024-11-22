@@ -8,12 +8,10 @@ using Microsoft.OpenApi.Models;
 using WaiBao;
 using System.Text.Json.Serialization;
 using System.Net;
+using WaiBao.Db.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region 代理请求测试
-await ProxyRun();
-#endregion
 
 
 builder.Services.Configure<MvcOptions>(o =>
@@ -161,6 +159,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "企业官网Api");
+    // 将 Swagger UI 设置为应用程序的根路径
+    c.RoutePrefix = string.Empty;
+});
 app.UseStaticFiles();
 //允许所有源
 app.UseCors(options =>
@@ -176,29 +180,36 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
+app.UseEndpoints(endpoints => {
+    endpoints.MapControllers();
 
-app.MapControllers();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "企业官网Api");
-    // 将 Swagger UI 设置为应用程序的根路径
-    c.RoutePrefix = string.Empty;
 });
+
+
+
 //方便随地大小便，但是官方是不推荐这样做的（去踏马的官方，爷走特色主义路线）
 ServiceLocator.Instance = app.Services;
 ServiceLocator.ApplicationBuilder = app;
+
+var db = SqlSugarHelper.Db;
+
+//数据初始化
+app.MapGet("/seed", async () =>
+{
+
+    db.CodeFirst.InitTables<SysUserEntity>();
+    string name = "op";
+    string pwd = "op";
+    var loginResult = await db.Queryable<SysUserEntity>().Where(a => !a.IsBan && a.UsePwd == pwd && a.UserName == name).AnyAsync();
+    if (!loginResult)
+    {
+        await db.Insertable<SysUserEntity>(new SysUserEntity { IsBan = false, UsePwd = pwd, UserName = name }).ExecuteCommandAsync();
+    }
+
+    db.CodeFirst.InitTables<FileSourceEntity>();
+    // db.CodeFirst.InitTables<ArticleEntity>();
+
+});
 app.MapGet("/health", () => "1024");
 app.Run();
 
-static async Task ProxyRun()
-{
-    var proxy = new WebProxy("proxy.shenlongproxy.com", 31212);                                             
-    proxy.Credentials = new NetworkCredential(userName: "customer-42b05a76a27", password: "d413b4b9"); 
-    var httpClientHandler = new HttpClientHandler
-    {
-        Proxy = proxy,
-    };
-    HttpClient client = new HttpClient(httpClientHandler);
-    var ret = await client.GetStringAsync("https://www.google.com");
-    Console.WriteLine(ret);
-}
